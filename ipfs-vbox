@@ -7,7 +7,7 @@ die() {
 }
 
 usage() {
-  echo "usage: $0 [ boot | rm ] <ipfs-path>"
+  echo "usage: ipfs-vbox [ boot | rm ] <ipfs-path>"
   echo "boot iso at <ipfs-path>"
   exit 1
 }
@@ -50,7 +50,7 @@ createvm() {
 
 # requires one arg
 if [ "$#" -ne 2 ]; then
-  usage
+  usage $0
 fi
 
 # validate iso arg

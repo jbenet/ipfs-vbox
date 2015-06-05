@@ -1,5 +1,40 @@
 # ipfs-vbox - boot VMs in virtual box with IPFS
 
+Quick shell script to assist booting VMs with VirtualBox from IPFS. Based on https://github.com/zignig/astralboot
+
+## Install
+
+```sh
+git clone https://github.com/jbenet/ipfs-vbox
+cd ipfs-vbox
+cp ipfs-vbox /usr/local/bin/ipfs-vbox
+```
+
+You should now have:
+
+```sh
+> ipfs-vbox
+usage: ipfs-vbox [ boot | rm ] <ipfs-path>
+boot iso at <ipfs-path>
+```
+
+## Usage
+
+```
+# add a vm
+> ipfs add -w ipfs.iso
+added QmRtavajASJyHcT4wVZkTS9s1XqtpFDW5jeUzGUzw6RPtb/ipfs.iso ipfs.iso
+
+# run ipfs daemon + mount
+> ipfs daemon --mount &
+
+# boot a vm
+> ipfs-vbox boot /ipfs/QmRtavajASJyHcT4wVZkTS9s1XqtpFDW5jeUzGUzw6RPtb/ipfs.iso
+
+# remove a vm
+> ipfs-vbox rm /ipfs/QmRtavajASJyHcT4wVZkTS9s1XqtpFDW5jeUzGUzw6RPtb/ipfs.iso
+```
+
 ## Example
 
 First, get a vm image and add it to ipfs, like this:
