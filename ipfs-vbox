@@ -1,0 +1,66 @@
+#!/bin/sh
+
+
+die() {
+  echo >&2 "error: $@"
+  exit 1
+}
+
+usage() {
+  echo "usage: $0 [ boot | rm ] <ipfs-path>"
+  echo "boot iso at <ipfs-path>"
+  exit 1
+}
+
+clean() {
+  VBoxManage controlvm "$vmname" poweroff 2>&1 >/dev/null
+  VBoxManage unregistervm "$vmname" --delete 2>&1 >/dev/null
+  rm -rf "~/VirtualBox\ VMs/$vmname"
+}
+
+boot() {
+  findvm
+  VBoxManage startvm "$vmname"
+}
+
+findvm() {
+  notfound='daemon must be running and mounted. try:\nipfs daemon --mount &'
+  stat "$iso" >/dev/null 2>/dev/null || die "$notfound"
+
+  VBoxManage list vms | grep "$vmname" >/dev/null || createvm
+}
+
+createvm() {
+  # create the vm
+  VBoxManage createvm --name "$vmname" --register
+  VBoxManage modifyvm "$vmname" --memory 512 --acpi on --boot1 dvd
+  VBoxManage modifyvm "$vmname" --nic1 nat --nictype1 82540EM --cableconnected1 on
+  VBoxManage modifyvm "$vmname" --ostype Linux
+
+  # add a hdd
+  VBoxManage createhd --filename ./disk.vdi --size 10000
+  VBoxManage storagectl "$vmname" --name "IDE Controller" --add ide
+  VBoxManage storageattach "$vmname" --storagectl "IDE Controller"  \
+      --port 0 --device 0 --type hdd --medium ./disk.vdi
+
+  # attach the iso
+  VBoxManage storageattach "$vmname" --storagectl "IDE Controller" \
+      --port 1 --device 0 --type dvddrive --medium "$iso"
+}
+
+# requires one arg
+if [ "$#" -ne 2 ]; then
+  usage
+fi
+
+# validate iso arg
+cmd=$1
+iso=$2
+vmname=$2
+echo "$iso" | egrep "^/ip[fn]s/" >/dev/null || die "path must begin with /ipfs/ or /ipns/"
+
+case "$cmd" in
+boot) boot ;;
+rm) clean ;;
+*) usage ;;
+esac
